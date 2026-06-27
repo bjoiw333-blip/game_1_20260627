@@ -1,0 +1,78 @@
+document.body.innerHTML = `<canvas id="game" width="400" height="600"></canvas>`;
+const c=document.getElementById("game");
+const x=c.getContext("2d");
+
+let p={x:185,y:520,w:30,h:30,s:6};
+let e=[],s=0,g=false,k={},b=0;
+
+addEventListener("keydown",a=>{
+  if(g&&a.key==="Enter"){reset();return;}
+  k[a.key]=1;
+});
+addEventListener("keyup",a=>k[a.key]=0);
+
+function reset(){
+  e=[];s=0;g=false;p.x=185;p.y=520;k={};
+}
+
+function drawP(){
+  x.save();
+  x.translate(p.x,p.y);
+  x.fillStyle="dodgerblue";
+  x.beginPath();
+  x.moveTo(15,0);
+  x.lineTo(30,30);
+  x.lineTo(0,30);
+  x.closePath();
+  x.fill();
+  x.restore();
+}
+
+function spawn(){
+  let n=Math.min(1+Math.floor(s/30),5);
+  for(let i=0;i<n;i++){
+    e.push({x:Math.random()*350,y:-50,w:50,h:50,v:2+Math.random()*2});
+  }
+}
+
+setInterval(()=>{if(!g)spawn();},900);
+
+function loop(){
+  if(!g){
+    if(k.ArrowLeft)p.x-=p.s;
+    if(k.ArrowRight)p.x+=p.s;
+    if(k.ArrowUp)p.y-=p.s;
+    if(k.ArrowDown)p.y+=p.s;
+
+    p.x=Math.max(0,Math.min(370,p.x));
+    p.y=Math.max(0,Math.min(570,p.y));
+
+    for(let i=e.length-1;i>=0;i--){
+      let o=e[i];
+      o.y+=o.v;
+
+      if(o.y>600){e.splice(i,1);s++;continue;}
+
+      if(p.x<o.x+o.w&&p.x+30>o.x&&p.y<o.y+o.h&&p.y+30>o.y){
+        g=true;
+      }
+    }
+  }
+
+  x.clearRect(0,0,400,600);
+  drawP();
+  x.fillStyle="red";
+  e.forEach(o=>x.fillRect(o.x,o.y,o.w,o.h));
+  x.fillStyle="#000";
+  x.fillText("점수:"+s,10,20);
+
+  if(g){
+    x.fillStyle="rgba(0,0,0,0.5)";
+    x.fillRect(0,0,400,600);
+    x.fillStyle="white";
+    x.fillText("GAME OVER - Enter",120,300);
+  }
+
+  requestAnimationFrame(loop);
+}
+loop();
